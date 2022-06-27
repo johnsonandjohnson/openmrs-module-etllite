@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ This Source Code Form is subject to the terms of the Mozilla Public License,
+  ~ v. 2.0. If a copy of the MPL was not distributed with this file, You can
+  ~ obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+  ~ the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+  ~ <p>
+  ~ Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+  ~ graphic logo is a trademark of OpenMRS Inc.
+  -->
+
+<!-- Beans to add to the current Application context definition -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-3.0.xsd
+            http://www.springframework.org/schema/jee
+            http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+            http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+    <context:component-scan base-package="org.openmrs.module.etllite"/>
+
+    <bean id="etllite.EncryptionUtil" class="org.openmrs.module.etllite.api.util.EncryptionUtil"/>
+
+    <bean id="etllite.ETLUtil" class="org.openmrs.module.etllite.api.util.ETLUtil"/>
+
+    <bean id="etllite.Util" class="org.openmrs.module.etllite.api.util.Util"/>
+
+    <bean id="etllite.ConfigResponseBuilder" class="org.openmrs.module.etllite.api.builder.ConfigResponseBuilder"/>
+
+    <bean id="etllite.MappingRequestBuilder" class="org.openmrs.module.etllite.api.builder.MappingRequestBuilder"/>
+
+    <bean id="etllite.MappingResponseBuilder" class="org.openmrs.module.etllite.api.builder.MappingResponseBuilder"/>
+
+    <bean id="etllite.MappingDao" class="org.openmrs.module.etllite.api.dao.impl.MappingDaoImpl">
+        <property name="dbSessionFactory">
+            <ref bean="dbSessionFactory"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.LogDao" class="org.openmrs.module.etllite.api.dao.impl.ETLLogDaoImpl">
+        <property name="dbSessionFactory">
+            <ref bean="dbSessionFactory"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.ErrorLogDao" class="org.openmrs.module.etllite.api.dao.impl.ErrorLogDaoImpl">
+        <property name="dbSessionFactory">
+            <ref bean="dbSessionFactory"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.ConfigBuilder" class="org.openmrs.module.etllite.api.builder.ConfigBuilder">
+        <property name="encryptionUtil">
+            <ref local="etllite.EncryptionUtil"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.etlEventService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="target">
+            <bean class="org.openmrs.module.etllite.api.service.impl.ETLEventServiceImpl"/>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list merge="true">
+                <value>org.openmrs.module.etllite.api.service.ETLEventService</value>
+                <ref local="etllite.etlEventService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="etl.settings.manager" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="target">
+            <bean class="org.openmrs.module.etllite.api.service.impl.SettingsManagerServiceImpl"/>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list merge="true">
+                <value>org.openmrs.module.etllite.api.service.SettingsManagerService</value>
+                <ref local="etl.settings.manager"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="etl.schedulerService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="target">
+            <bean class="org.openmrs.module.etllite.api.service.impl.ETLSchedulerServiceImpl">
+                <property name="schedulerService" ref="schedulerService"/>
+            </bean>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list merge="true">
+                <value>org.openmrs.module.etllite.api.service.ETLSchedulerService</value>
+                <ref local="etl.schedulerService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="etllite.configService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="target">
+            <bean class="org.openmrs.module.etllite.api.service.impl.ConfigServiceImpl" init-method="initialize">
+                <property name="settingsManagerService">
+                    <ref local="etl.settings.manager"/>
+                </property>
+                <property name="configBuilder">
+                    <ref local="etllite.ConfigBuilder"/>
+                </property>
+            </bean>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list merge="true">
+                <value>org.openmrs.module.etllite.api.service.ConfigService</value>
+                <ref local="etllite.configService"/>
+            </list>
+        </property>
+    </bean>
+
+
+    <bean id="etllite.etlService" class="org.openmrs.module.etllite.api.service.impl.ETLServiceImpl"
+          init-method="initialize">
+        <property name="mappingDao">
+            <ref local="etllite.MappingDao"/>
+        </property>
+        <property name="configService">
+            <ref local="etllite.configService"/>
+        </property>
+        <property name="etlUtil">
+            <ref local="etllite.ETLUtil"/>
+        </property>
+        <property name="util">
+            <ref local="etllite.Util"/>
+        </property>
+        <property name="etlLogDao">
+            <ref local="etllite.LogDao"/>
+        </property>
+        <property name="etlEventService">
+            <ref local="etllite.etlEventService"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.mappingService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="target">
+            <bean class="org.openmrs.module.etllite.api.service.impl.MappingServiceImpl"/>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list merge="true">
+                <value>org.openmrs.module.etllite.api.service.MappingService</value>
+                <ref local="etllite.mappingService"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="etllite.ETLJobEventListener" class="org.openmrs.module.etllite.api.event.ETLJobEventListener">
+        <property name="etlService">
+            <ref local="etllite.etlService"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.ETLImportDataEventListener"
+          class="org.openmrs.module.etllite.api.event.ETLImportDataEventListener">
+        <property name="etlService">
+            <ref local="etllite.etlService"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.ETLErrorPersistence"
+          class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="target">
+            <bean class="org.openmrs.module.etllite.api.event.ETLErrorPersistenceImpl"/>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+    </bean>
+
+    <bean id="etllite.ETLFailureEventListener" class="org.openmrs.module.etllite.api.event.ETLFailureEventListener">
+    </bean>
+
+    <bean id="etllite.ETLErrorService" class="org.openmrs.module.etllite.api.service.impl.ETLErrorServiceImpl" />
+
+    <bean id="etllite.ETLServicesConfigHandler"
+          class="org.openmrs.module.etllite.handler.metadatasharing.ETLServicesConfigHandler"/>
+</beans>

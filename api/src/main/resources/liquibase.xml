@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!--
+  ~ This Source Code Form is subject to the terms of the Mozilla Public License,
+  ~ v. 2.0. If a copy of the MPL was not distributed with this file, You can
+  ~ obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+  ~ the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+  ~ <p>
+  ~ Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+  ~ graphic logo is a trademark of OpenMRS Inc.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+				  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+ 
+	<!--
+		See http://wiki.openmrs.org/display/docs/Module+liquibase+File for
+		documentation on this file.
+
+		See http://www.liquibase.org/manual/home#available_database_refactorings
+		for a list of supported elements and attributes
+	-->
+
+	<changeSet id="etl-2019-08-14-11:45" author="Connect for Life">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="etl_error_logs"/></not>
+		</preConditions>
+		<comment>
+			Created the etl_error_logs table
+		</comment>
+		<createTable tableName="etl_error_logs">
+			<column name="etl_error_logs_id" type="int" autoIncrement="true">
+				<constraints primaryKey="true" unique="true"/>
+			</column>
+			<column name="databaseName" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="mapping" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="sourceKey" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="sourceValue" type="varchar(255)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="runOn" type="date">
+				<constraints nullable="false"/>
+			</column>
+			<column name="stackTrace" type="MEDIUMTEXT"/>
+			<column name="errorMessage" type="varchar(255)" />
+
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true"/>
+			</column>
+			<column name="creator" type="int"/>
+			<column name="changed_by" type="int"/>
+			<column name="date_changed" type="datetime"/>
+			<column name="date_created" type="datetime">
+				<constraints nullable="false"/>
+			</column>
+			<column name="date_voided" type="datetime"/>
+			<column name="void_reason" type="varchar(255)"/>
+			<column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+				<constraints nullable="false"/>
+			</column>
+			<column name="voided_by" type="int"/>
+		</createTable>
+		<addForeignKeyConstraint constraintName="etl_error_logs_creator_fk"
+								 baseTableName="etl_error_logs" baseColumnNames="creator"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addForeignKeyConstraint constraintName="etl_error_logs_changed_by_fk"
+								 baseTableName="etl_error_logs" baseColumnNames="changed_by"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addForeignKeyConstraint constraintName="etl_error_logs_voided_by_fk"
+								 baseTableName="etl_error_logs" baseColumnNames="voided_by"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<createIndex indexName="etl_error_logs_index_sourceValue"
+					 tableName="etl_error_logs">
+			<column name="sourceValue"/>
+		</createIndex>
+		<createIndex indexName="etl_error_logs_index_runOn"
+					 tableName="etl_error_logs">
+			<column name="runOn"/>
+		</createIndex>
+		<createIndex indexName="etl_error_logs_index_mapping"
+					 tableName="etl_error_logs">
+			<column name="mapping"/>
+		</createIndex>
+		<createIndex indexName="etl_error_logs_index_databaseName"
+					 tableName="etl_error_logs">
+			<column name="databaseName"/>
+		</createIndex>
+		<createIndex indexName="etl_error_logs_index_sourceKey"
+					 tableName="etl_error_logs">
+			<column name="sourceKey"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="etl-2019-08-14-11:50" author="Connect for Life">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="etl_logs"/></not>
+		</preConditions>
+		<comment>
+			Created the etl_logs table
+		</comment>
+		<createTable tableName="etl_logs">
+			<column name="etl_logs_id" type="int" autoIncrement="true">
+				<constraints primaryKey="true" unique="true"/>
+			</column>
+			<column name="databaseName" type="varchar(255)" />
+			<column name="mapping" type="varchar(255)" />
+			<column name="extractStartTime" type="datetime" />
+			<column name="extractEndTime" type="datetime" />
+			<column name="transformStartTime" type="datetime" />
+			<column name="transformEndTime" type="datetime" />
+			<column name="loadStartTime" type="datetime" />
+			<column name="loadEndTime" type="datetime" />
+			<column name="extractedRecords" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="transformedRecords" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="loadRecords" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="runOn" type="date" />
+			<column name="jobStatus" type="BOOLEAN" />
+
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true"/>
+			</column>
+			<column name="creator" type="int"/>
+			<column name="changed_by" type="int"/>
+			<column name="date_changed" type="datetime"/>
+			<column name="date_created" type="datetime">
+				<constraints nullable="false"/>
+			</column>
+			<column name="date_voided" type="datetime"/>
+			<column name="void_reason" type="varchar(255)"/>
+			<column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+				<constraints nullable="false"/>
+			</column>
+			<column name="voided_by" type="int"/>
+		</createTable>
+		<addForeignKeyConstraint constraintName="etl_logs_creator_fk"
+								 baseTableName="etl_logs" baseColumnNames="creator"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addForeignKeyConstraint constraintName="etl_logs_changed_by_fk"
+								 baseTableName="etl_logs" baseColumnNames="changed_by"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addForeignKeyConstraint constraintName="etl_logs_voided_by_fk"
+								 baseTableName="etl_logs" baseColumnNames="voided_by"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+	</changeSet>
+
+	<changeSet id="etl-2019-08-14-12:00" author="Connect for Life">
+		<preConditions onFail="MARK_RAN">
+			<not><tableExists tableName="etl_mappings"/></not>
+		</preConditions>
+		<comment>
+			Created the etl_logs table
+		</comment>
+		<createTable tableName="etl_mappings">
+			<column name="etl_mappings_id" type="int" autoIncrement="true">
+				<constraints primaryKey="true" unique="true"/>
+			</column>
+			<column name="name" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="source" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="query" type="MEDIUMTEXT">
+				<constraints nullable="false" />
+			</column>
+			<column name="transformTemplate" type="MEDIUMTEXT" />
+			<column name="loadTemplate" type="MEDIUMTEXT" />
+			<column name="cronExpression" type="varchar(255)" />
+			<column name="fetchSize" type="int">
+				<constraints nullable="false" />
+			</column>
+			<column name="testResultsSize" type="int">
+				<constraints nullable="false" />
+			</column>
+
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" unique="true"/>
+			</column>
+			<column name="creator" type="int"/>
+			<column name="changed_by" type="int"/>
+			<column name="date_changed" type="datetime"/>
+			<column name="date_created" type="datetime">
+				<constraints nullable="false"/>
+			</column>
+			<column name="date_voided" type="datetime"/>
+			<column name="void_reason" type="varchar(255)"/>
+			<column name="voided" type="BOOLEAN" defaultValueBoolean="false">
+				<constraints nullable="false"/>
+			</column>
+			<column name="voided_by" type="int"/>
+		</createTable>
+		<addForeignKeyConstraint constraintName="etl_mappings_creator_fk"
+								 baseTableName="etl_mappings" baseColumnNames="creator"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addForeignKeyConstraint constraintName="etl_mappings_changed_by_fk"
+								 baseTableName="etl_mappings" baseColumnNames="changed_by"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addForeignKeyConstraint constraintName="etl_mappings_voided_by_fk"
+								 baseTableName="etl_mappings" baseColumnNames="voided_by"
+								 referencedTableName="users" referencedColumnNames="user_id"/>
+		<addUniqueConstraint tableName="etl_mappings" columnNames="name, source" constraintName="UNIQUE_ETL_MAPPING_IDX" />
+		<createIndex indexName="etl_mappings_index_name"
+					 tableName="etl_mappings">
+			<column name="name"/>
+		</createIndex>
+		<createIndex indexName="etl_mappings_index_source"
+					 tableName="etl_mappings">
+			<column name="source"/>
+		</createIndex>
+	</changeSet>
+
+	<changeSet id="etl-2021-02-08-12:00" author="Connect for Life">
+		<preConditions onFail="MARK_RAN">
+			<not><columnExists tableName="etl_mappings" columnName="retired" /></not>
+		</preConditions>
+		<comment>Mapping entity now derives from BaseOpenmrsMetadata</comment>
+		<addColumn tableName="etl_mappings">
+			<column name="description" type="varchar(255)" />
+		</addColumn>
+		<renameColumn tableName="etl_mappings" columnDataType="tinyint(1)" oldColumnName="voided" newColumnName="retired" />
+		<renameColumn tableName="etl_mappings" columnDataType="datetime" oldColumnName="date_voided" newColumnName="date_retired" />
+		<renameColumn tableName="etl_mappings" columnDataType="int(11)" oldColumnName="voided_by" newColumnName="retired_by" />
+		<renameColumn tableName="etl_mappings" columnDataType="varchar(255)" oldColumnName="void_reason" newColumnName="retire_reason" />
+	</changeSet>
+</databaseChangeLog>
