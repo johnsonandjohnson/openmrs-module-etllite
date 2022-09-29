@@ -8,7 +8,7 @@
  * graphic logo is a trademark of OpenMRS Inc.
  */
 
-import axiosInstance from '@bit/soldevelo-omrs.cfl-components.shared/axios'
+import axiosInstance from '../components/shared/axios'
 import { SUCCESS, REQUEST, FAILURE } from './action-type.util';
 import { ConfigModel } from '../shared/model/config.model';
 import { DatabaseModel } from '../shared/model/database.model';

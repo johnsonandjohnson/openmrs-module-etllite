@@ -10,13 +10,13 @@
 
 import { combineReducers } from 'redux';
 import { reducers as openmrs } from '@openmrs/react-components';
-import privateRouteReducer from '@bit/soldevelo-omrs.cfl-components.private-route/private-route.reducer';
+import privateRouteReducer from '../components/private-route/private-route.reducer';
 
 import mappingReducer from './mappingReducer';
 import configReducer from './configReducer';
 
 import customizeReducer
-  from '@bit/soldevelo-cfl.omrs-components.customize/customize.reducer';
+  from '../components/customize/customize.reducer';
 
 export default combineReducers({
   openmrs,
