@@ -30,7 +30,6 @@ import { ConfigModel } from '../../shared/model/config.model';
 import { errorToast } from '../../utils/toast-display-util';
 import OpenMRSModal from '../OpenMRSModal';
 import { validateForm } from '../../utils/validation-util';
-import * as Default from '../../utils/messages';
 import { getIntl } from "@openmrs/react-components/lib/components/localization/withLocalization";
 import * as Yup from "yup";
 import * as Default from '../../utils/messages';

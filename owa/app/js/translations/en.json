@@ -1,4 +1,5 @@
 {
+    "ETL_HOME_BREADCRUMB": "Home",
     "ETL_FIELD_REQUIRED": "This field is required",
     "ETL_REQUIRED_LABEL": "obligatory",
     "ETL_GENERIC_FAILURE": "An error occurred.",
